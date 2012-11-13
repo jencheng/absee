@@ -21,7 +21,7 @@ module Absee
   #
   #== Returns:
   #  Six arrays: trace data for A, C, G, T, called sequence, and peak indexes
-  def readAB(filename)
+  def self.readAB(filename)
     #opens ab1 as a File object
     abFile = open(filename)
     byteArray = ""
@@ -46,7 +46,7 @@ module Absee
   #== Returns:
   #Six arrays: trace data for A, C, G, T, called sequence, and peak indexes
   #readAB returns the results of this method
-  def processAB(filestream)
+  def self.processAB(filestream)
     #// here, we can read the ABIF header information
     version = readUnsignedByte_2(4, filestream)
     #// major versions greater than 1 are not supported
@@ -73,7 +73,7 @@ module Absee
   #
   #== Returns:
   #an int ordered by most significant byte first
-  def readUnsignedByte_2(offset, filestream)
+  def self.readUnsignedByte_2(offset, filestream)
     #// most significant byte first
     #// |byte0|byte1| <= |unsigned int|
     byteArray = ""
@@ -90,7 +90,7 @@ module Absee
   #
   #== Returns:
   #an int ordered by most significant byte first
-  def readUnsignedByte_4(offset, filestream)
+  def self.readUnsignedByte_4(offset, filestream)
     byteArray = ""
     filestream.seek(offset, IO::SEEK_SET)
     byteArray = filestream.read(4, byteArray)
@@ -109,7 +109,7 @@ module Absee
   #== Returns:
   #an array of arrays, each with information from the directory
   #[name, tag number, element type, element size, number of elements, data size, data offset]
-  def readDirectoryEntry(filestream, dataOffset, numElements)
+  def self.readDirectoryEntry(filestream, dataOffset, numElements)
     filestream.seek(dataOffset, IO::SEEK_SET)
     byteArray = ""
     filestream.read(28*numElements, byteArray)
@@ -163,7 +163,7 @@ module Absee
   #
   #== Returns:
   #the element from the array
-  def get(array, element)
+  def self.get(array, element)
     if element == "name"
       return array[0]
     elsif element == "tag_number"
@@ -191,7 +191,7 @@ module Absee
   #
   #== Returns:
   #number of samples and number of bases contained in this ABIF file
-  def gatherInformation(directory, numElements)
+  def self.gatherInformation(directory, numElements)
     numSamples = 0
     numBases = 0
 
@@ -218,7 +218,7 @@ module Absee
   #
   #== Returns:
   #four arrays with trace data in the order ACGT
-  def getSamples(filestream, directory, numElements, numSamples)
+  def self.getSamples(filestream, directory, numElements, numSamples)
     samples_a = []
     samples_c = []
     samples_g = []
@@ -268,7 +268,7 @@ module Absee
   #
   #== Returns:
   #an array with the called sequence
-  def getCalledSequence(filestream, directory, numElements, numBases)
+  def self.getCalledSequence(filestream, directory, numElements, numBases)
     calledSequence = []
     (0..numElements-1).each do |i|
       if (get(directory[i], "name") == "PBAS") && (get(directory[i], "tag_number") == 2)
@@ -293,7 +293,7 @@ module Absee
   #
   #== Returns:
   #an array with the indexes of the peaks
-  def getPeakIndexes(filestream, directory, numElements, numBases)
+  def self.getPeakIndexes(filestream, directory, numElements, numBases)
     peakIndexes = []
     (0..numElements-1).each do |i|
       if (get(directory[i], "name") == "PLOC") && (get(directory[i], "tag_number") == 2)
