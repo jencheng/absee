@@ -10,6 +10,13 @@ Documentation
 Documentation is located in the directories.
 More information can also be found at [Iron Chef SynBio](http://ironchefsynbio.wordpress.com/)
 
+Example
+-------
+
+	%irb
+	>> require ‘absee’
+	=> true
+	>> Absee.readAB(“/Users/Jenny/Desktop/my_sequence.ab1″)
 
 License
 -------
