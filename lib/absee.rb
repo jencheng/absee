@@ -9,8 +9,17 @@
 #
 # MIT license 2012
 
-module Absee
+class ABSee
 
+  #variables
+  @traceA = []
+  @traceG = []
+  @traceC = []
+  @traceT = []
+  @calledSequences = []
+  @peakIndexes = []
+  @qualityScores = []
+  
   #opens the ABIF sequencing / chromatogram file
   #checks for ABIF file type
   #major ABIF versions greater than 1 are not supported
@@ -21,7 +30,7 @@ module Absee
   #
   #== Returns:
   #  Six arrays: trace data for A, C, G, T, called sequence, and peak indexes
-  def self.readAB(filename)
+  def read(filename)
     #opens ab1 as a File object
     abFile = open(filename)
     byteArray = ""
@@ -32,12 +41,53 @@ module Absee
     abFile.read(4, byteArray)
     #ABIF file indicator
     if byteArray == "ABIF"
-      return processAB(abFile)
+      processAB(abFile)
     else
-      return [],[],[],[],[],[]
+      raise "file not recognized as ABIF"
     end
   end
 
+
+  ##accessors
+  #== Returns:
+  #  an array with the trace data for adenine
+  def get_traceA()
+    return @traceA
+  end
+  #== Returns:
+  #  an array with the trace data for guanine
+  def get_traceG()
+    return @traceG
+  end
+  #== Returns:
+  #  an array with the trace data for thymine
+  def get_traceT()
+    return @traceT
+  end
+  #== Returns:
+  #  an array with the trace data for cytosine
+  def get_traceC()
+    return @traceC
+  end
+  #== Returns:
+  #  an array with the Basecalled sequence
+  def get_calledSequence()
+    return @calledSequence
+  end
+  #== Returns:
+  #  an array with the Basecalled quality scores
+  def get_qualityScores()
+    return @qualityScores
+  end
+  #== Returns:
+  #  an array with the peak indexes
+  def get_peakIndexes()
+    return @peakIndexes
+  end
+  
+  
+  private
+  
   #process the opened ABIF filestream, and calls subsequent methods to extract the data
   #
   #== Parameters:
@@ -46,13 +96,13 @@ module Absee
   #== Returns:
   #Six arrays: trace data for A, C, G, T, called sequence, and peak indexes
   #readAB returns the results of this method
-  def self.processAB(filestream)
+  def processAB(filestream)
     #// here, we can read the ABIF header information
     version = readUnsignedByte_2(4, filestream)
     #// major versions greater than 1 are not supported
     #// Applied Biosystems rules
     if (version / 100 > 1)
-      return [], [], [], [], [], []
+      raise "ABIF version #{version} not supported (only supported for version less than 1)"
     end
     #// we just read ABIF, so we don't need more information than that
     numElements = readUnsignedByte_4(18, filestream)
@@ -61,10 +111,19 @@ module Absee
     numSamples, numBases = gatherInformation(directory, numElements)
     samples_a, samples_c, samples_g, samples_t = getSamples(filestream, directory, numElements, numSamples)
     called_sequence = getCalledSequence(filestream, directory, numElements, numBases)
-    peakIndexes = getPeakIndexes(filestream, directory, numElements, numBases)
-    return samples_a, samples_c, samples_g, samples_t, called_sequence, peakIndexes
+    quality_scores = getQualityScores(filestream, directory, numElements, numBases)
+    peak_indexes = getPeakIndexes(filestream, directory, numElements, numBases)
+    ##return samples_a, samples_c, samples_g, samples_t, called_sequence, peak_indexes, quality_scores
+    @traceA = samples_a
+    @traceC = samples_c
+    @traceG = samples_g
+    @traceT = samples_t
+    @calledSequence = called_sequence
+    @qualityScores = quality_scores
+    @peakIndexes = peak_indexes
+    nil
   end
-
+  
   #reads 2 unsigned bytes and orders by most significant byte first
   #
   #== Parameters:
@@ -73,7 +132,7 @@ module Absee
   #
   #== Returns:
   #an int ordered by most significant byte first
-  def self.readUnsignedByte_2(offset, filestream)
+  def readUnsignedByte_2(offset, filestream)
     #// most significant byte first
     #// |byte0|byte1| <= |unsigned int|
     byteArray = ""
@@ -90,7 +149,7 @@ module Absee
   #
   #== Returns:
   #an int ordered by most significant byte first
-  def self.readUnsignedByte_4(offset, filestream)
+  def readUnsignedByte_4(offset, filestream)
     byteArray = ""
     filestream.seek(offset, IO::SEEK_SET)
     byteArray = filestream.read(4, byteArray)
@@ -109,7 +168,7 @@ module Absee
   #== Returns:
   #an array of arrays, each with information from the directory
   #[name, tag number, element type, element size, number of elements, data size, data offset]
-  def self.readDirectoryEntry(filestream, dataOffset, numElements)
+  def readDirectoryEntry(filestream, dataOffset, numElements)
     filestream.seek(dataOffset, IO::SEEK_SET)
     byteArray = ""
     filestream.read(28*numElements, byteArray)
@@ -163,7 +222,7 @@ module Absee
   #
   #== Returns:
   #the element from the array
-  def self.get(array, element)
+  def get(array, element)
     if element == "name"
       return array[0]
     elsif element == "tag_number"
@@ -191,7 +250,7 @@ module Absee
   #
   #== Returns:
   #number of samples and number of bases contained in this ABIF file
-  def self.gatherInformation(directory, numElements)
+  def gatherInformation(directory, numElements)
     numSamples = 0
     numBases = 0
 
@@ -218,7 +277,7 @@ module Absee
   #
   #== Returns:
   #four arrays with trace data in the order ACGT
-  def self.getSamples(filestream, directory, numElements, numSamples)
+  def getSamples(filestream, directory, numElements, numSamples)
     samples_a = []
     samples_c = []
     samples_g = []
@@ -268,7 +327,7 @@ module Absee
   #
   #== Returns:
   #an array with the called sequence
-  def self.getCalledSequence(filestream, directory, numElements, numBases)
+  def getCalledSequence(filestream, directory, numElements, numBases)
     calledSequence = []
     (0..numElements-1).each do |i|
       if (get(directory[i], "name") == "PBAS") && (get(directory[i], "tag_number") == 2)
@@ -283,6 +342,31 @@ module Absee
     return calledSequence
   end
 
+  #extracts the quality score associated with the called sequence
+  #
+  #== Parameters:
+  #filestream:: an open File
+  #directory:: an array of array generated by readDirectoryEntry
+  #numElements:: an int indicating the number of elements in this ABIF file
+  #numBases:: an int calculated by gatherInformation
+  #
+  #== Returns:
+  #an array with the quality scores
+  def getQualityScores(filestream, directory, numElements, numBases)
+    qualityScore = []
+    (0..numElements-1).each do |i|
+      if (get(directory[i], "name") == "PCON") && (get(directory[i], "tag_number") == 2)
+        byteArray_seq = ""
+        filestream.seek(get(directory[i], "data_offset"))
+        filestream.read(numBases,byteArray_seq)
+        (0..numBases-1).each do |j|
+          qualityScore[j] = byteArray_seq.getbyte(j)
+        end
+      end
+    end
+    return qualityScore
+  end
+
   #extracts the trace information for the bases
   #
   #== Parameters:
@@ -293,7 +377,7 @@ module Absee
   #
   #== Returns:
   #an array with the indexes of the peaks
-  def self.getPeakIndexes(filestream, directory, numElements, numBases)
+  def getPeakIndexes(filestream, directory, numElements, numBases)
     peakIndexes = []
     (0..numElements-1).each do |i|
       if (get(directory[i], "name") == "PLOC") && (get(directory[i], "tag_number") == 2)
