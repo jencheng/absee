@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'absee'
-  s.version     = '1.0'
+  s.version     = '1.1'
   s.date        = '2012-11-14'
   s.summary     = ".ab1 reader / ABIF reader"
   s.description = ".ab1 reader / ABIF reader; extracts the peak indexes, called sequence, quality scores, and ACGT values from sequencing files"

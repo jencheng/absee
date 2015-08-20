@@ -31,8 +31,15 @@ class ABSee
   #== Returns:
   #  Six arrays: trace data for A, C, G, T, called sequence, and peak indexes
   def read(filename)
-    #opens ab1 as a File object
-    abFile = open(filename)
+    if filename.instance_of?(StringIO) or filename.instance_of?(File)
+      abFile = filename
+    elsif filename.instance_of? String
+      #opens ab1 as a File object
+      abFile = open(filename)
+    else
+      raise "Don't know what to do with input type #{filename.class}"
+    end
+
     byteArray = ""
     #// here we read the first four bytes. It is important
     #// to remember that we do not seek back the file, just
