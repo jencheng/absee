@@ -8,7 +8,6 @@ Documentation
 -------------
 
 Documentation is located in the directories.
-More information can also be found at [Iron Chef SynBio](http://ironchefsynbio.wordpress.com/)
 
 Example
 -------
@@ -17,11 +16,11 @@ Example
 	>> require ‘absee’
 	=> true
 	>> my_variable = ABSee.new()
-	=> #<ABSee:0x000001008599d0> 
+	=> #<ABSee:0x000001008599d0>
 	>> my_variable.read("/Users/Jenny/Desktop/my_sequence.ab1")
 	=> nil
 	>> my_variable.get_calledSequence()
-	
+
 Class Methods
 -------------
 
@@ -52,4 +51,4 @@ See the LICENSE file for details.
 
 Credits
 -------
-Created by Jenny Cheng [Iron Chef SynBio](http://ironchefsynbio.wordpress.com/)
+Created by Jenny Cheng
